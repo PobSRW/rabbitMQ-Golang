@@ -28,6 +28,13 @@ func main() {
 	// close channel
 	defer client.Close()
 
+	if err := client.CreateQueue("customer_created", true, false); err != nil {
+		panic(err)
+	}
+	if err := client.CreateQueue("customer_test", false, true); err != nil {
+		panic(err)
+	}
+
 	time.Sleep(10 * time.Second)
 	log.Println(client, "client")
 }
