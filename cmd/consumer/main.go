@@ -27,11 +27,11 @@ func main() {
 	// close channel
 	defer client.Close()
 
-	if err := client.CreateQueue("hello_world", false, true); err != nil {
+	if err := client.CreateQueue("hello_world", false, false); err != nil {
 		panic(err)
 	}
 
-	messageBus, err := client.Consume("hello_world", "", false)
+	messageBus, err := client.Consume("hello_world", "", true)
 	if err != nil {
 		panic(err)
 	}
