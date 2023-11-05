@@ -40,7 +40,7 @@ func main() {
 
 	go func() {
 		for message := range messageBus {
-			log.Printf("New Message: %v\n", message)
+			log.Printf("New Message: %v\n", message.Body)
 		}
 	}()
 
