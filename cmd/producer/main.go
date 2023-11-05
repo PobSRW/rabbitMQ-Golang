@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"obptwentyeight/evendrivenrabbitmq/internal"
+	"os"
+	"strings"
 	"time"
 
 	ampq "github.com/rabbitmq/amqp091-go"
@@ -31,20 +33,33 @@ func main() {
 	// close channel
 	defer client.Close()
 
-	if err := client.CreateQueue("hello_world", false, false); err != nil {
+	if err := client.CreateQueue("test_queue", true, false); err != nil {
 		panic(err)
 	}
+
+	body := bodyFrom(os.Args)
 
 	ctx, cancle := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancle()
 
-	if err := client.Send(ctx, "", "hello_world", ampq.Publishing{
-		ContentType: "text/plain",
-		Body:        []byte(`An cool message between services`),
+	if err := client.Send(ctx, "", "test_queue", ampq.Publishing{
+		// we need to mark our messages as persistent - by using the amqp.Persistent option amqp.Publishing takes
+		DeliveryMode: ampq.Persistent,
+		ContentType:  "text/plain",
+		Body:         []byte(body),
 	}); err != nil {
 		panic(err)
 	}
 
-	time.Sleep(10 * time.Second)
-	log.Println(client, "client")
+	log.Printf(" [x] Sent %s", body)
+}
+
+func bodyFrom(args []string) string {
+	var s string
+	if (len(args) < 2) || os.Args[1] == "" {
+		s = "hello"
+	} else {
+		s = strings.Join(args[1:], " ")
+	}
+	return s
 }

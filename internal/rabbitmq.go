@@ -74,3 +74,8 @@ func (rc RabbitClient) Consume(queue, consumer string, autoAck bool) (<-chan amq
 		nil,   // args
 	)
 }
+
+func (rc RabbitClient) FairDispatch(prefetchCount, prefetchSize int) error {
+	// set the prefetch count with the value of 1. This tells RabbitMQ not to give more than one message to a worker at a time. Or, in other words, don't dispatch a new message to a worker until it has processed and acknowledged the previous one. Instead, it will dispatch it to the next worker that is not still busy.
+	return rc.ch.Qos(prefetchCount, prefetchSize, false)
+}

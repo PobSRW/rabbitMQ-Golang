@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"log"
 	"obptwentyeight/evendrivenrabbitmq/internal"
+	"time"
 )
 
 var username = "guest"
@@ -27,11 +29,15 @@ func main() {
 	// close channel
 	defer client.Close()
 
-	if err := client.CreateQueue("hello_world", false, false); err != nil {
+	if err := client.CreateQueue("test_queue", true, false); err != nil {
 		panic(err)
 	}
 
-	messageBus, err := client.Consume("hello_world", "", false)
+	if err := client.FairDispatch(1, 0); err != nil {
+		panic(err)
+	}
+
+	messageBus, err := client.Consume("test_queue", "", false)
 	if err != nil {
 		panic(err)
 	}
@@ -40,10 +46,18 @@ func main() {
 
 	go func() {
 		for message := range messageBus {
-			log.Printf("New Message: %v\n", message)
+			log.Printf("Received a message: %s", message.Body)
+
+			dotCount := bytes.Count(message.Body, []byte("."))
+
+			t := time.Duration(dotCount)
+			time.Sleep(t * time.Second)
+			log.Printf("Done")
+			message.Ack(false)
 		}
 	}()
 
+	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-blocking
 
 }
