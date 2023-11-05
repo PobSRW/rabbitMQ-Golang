@@ -27,27 +27,22 @@ func main() {
 	// close channel
 	defer client.Close()
 
-	messageBus, err := client.Consume("customer_created", "email-service", false)
+	if err := client.CreateQueue("hello_world", false, false); err != nil {
+		panic(err)
+	}
+
+	messageBus, err := client.Consume("hello_world", "", false)
 	if err != nil {
 		panic(err)
 	}
 
-	var blocking chan struct{}
+	blocking := make(chan struct{})
 
 	go func() {
 		for message := range messageBus {
-			log.Println("New Message: %v", message)
-
-			if err := message.Ack(false); err != nil {
-				log.Println("Acknowledge message failes")
-				continue
-			}
-
-			log.Printf("Acknowledge message %s\n", message.MessageId)
+			log.Printf("New Message: %v\n", message)
 		}
 	}()
-
-	log.Println("Consuming, to close the program press CTRL+C")
 
 	<-blocking
 
