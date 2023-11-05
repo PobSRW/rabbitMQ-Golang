@@ -27,7 +27,7 @@ func main() {
 	// close channel
 	defer client.Close()
 
-	if err := client.CreateQueue("hello_world", false, false); err != nil {
+	if err := client.CreateQueue("hello_world", false, true); err != nil {
 		panic(err)
 	}
 
